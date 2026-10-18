@@ -1,95 +1,64 @@
-Credit Card Defaults Prediction
+# Credit Card Default Prediction
 
-This repository implements a machine learning pipeline to predict defaults of credit card payments. Given historical data about credit card customers, the goal is to build models that can identify which clients are likely to default, enabling preventive measures.
+Predicting whether a credit card client will default on next month's payment, using the
+[UCI "Default of Credit Card Clients"](https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients)
+dataset (30,000 clients, Taiwan, 2005). The notebook covers cleaning, exploratory analysis, class rebalancing,
+a comparison of seven classifiers and hyperparameter tuning.
 
-📋 Project Files & Structure
+## Results
 
-default of credit card clients.xls — the dataset used for modeling.
+About 22% of clients default, so the minority class was oversampled to a 50/50 balance before modelling.
+Scores on the 20% test split:
 
-Projet_ML_VF1.ipynb — the Jupyter notebook containing the full workflow: data exploration, preprocessing, modeling, evaluation.
+| Model | Accuracy | Recall (default) | F1 (default) |
+|---|---|---|---|
+| **Random Forest** | **0.90** | **0.95** | **0.90** |
+| Decision Tree | 0.86 | 0.95 | 0.87 |
+| KNN | 0.75 | 0.84 | 0.77 |
+| SVM | 0.70 | 0.61 | 0.67 |
+| AdaBoost | 0.70 | 0.58 | 0.66 |
+| Logistic Regression | 0.69 | 0.57 | 0.65 |
+| Bernoulli Naive Bayes | 0.68 | 0.53 | 0.63 |
 
-README.md — this file.
+**Caveat:** oversampling was applied before the train/test split, so duplicated default cases appear in both
+sets. That inflates the tree-based scores in particular, which can memorise duplicates. A sound evaluation would
+oversample only the training data (for example with an `imblearn` pipeline inside cross-validation); the
+linear and distance-based models are less affected.
 
-🔍 Workflow
+## Approach
 
-Here’s the typical pipeline followed in this project:
+1. **Cleaning:** renamed columns, converted types, removed 35 duplicate rows, checked for missing values.
+2. **Exploration:** default rate by sex, age, education and marital status; correlation matrix (the six monthly
+   bill amounts are strongly correlated with each other).
+3. **Preprocessing:** standardisation of numeric features, then selection of the 10 most informative features
+   (`SelectKBest`, ANOVA F-test) inside a scikit-learn pipeline.
+4. **Modelling:** seven classifiers compared with classification reports, ROC curves and F1.
+5. **Tuning:** `RandomizedSearchCV` (4- to 5-fold) for Logistic Regression, AdaBoost, Random Forest and SVM.
 
-Data exploration & visualization
+## Repository structure
 
-Understanding distributions, features, missing values, correlations.
+```
+├── credit_default_prediction.ipynb   # Full workflow (comments in French)
+├── data/
+│   └── default_of_credit_card_clients.xls
+└── requirements.txt
+```
 
-Visualizing default vs non-default across different attributes.
+## Getting started
 
-Data preprocessing
-
-Handling missing data (if any), encoding categorical variables, scaling/norming.
-
-Splitting into training and test sets.
-
-Model training
-
-Trying different classifiers (Logistic Regression, Decision Trees, Random Forests, etc.).
-
-Tuning parameters where applicable.
-
-Evaluation
-
-Using metrics such as Accuracy, Precision, Recall, F1-Score, ROC AUC.
-
-Possibly inspecting confusion matrix and other diagnostic plots.
-
-Conclusions
-
-Which model performed best?
-
-Which features seem the most predictive?
-
-Limitations & possible next steps.
-
-🔧 Setup & Usage
-
-To run or reproduce this project, here are the steps:
-
-Install required packages (create a virtual environment for safety):
-
+```bash
+git clone https://github.com/houcem24/credit-card-default-prediction.git
+cd credit-card-default-prediction
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+jupyter notebook credit_default_prediction.ipynb
+```
 
+## Context
 
-If you don’t have a requirements.txt, typical packages you’ll need include:
-pandas, numpy, scikit-learn, matplotlib / seaborn, etc.
+Machine learning course project at ESPRIT (class 4DS1, 2022), built in a team of six: Houaida Fatma Karoui,
+Aicha Chaaba, Molka Mrad, Yassine Kochat, Firas Kahia and Houssem Ouerdiane.
 
-Open the notebook:
+## License
 
-jupyter notebook Projet_ML_VF1.ipynb
-
-
-or
-
-jupyter lab
-
-
-Run the notebook cells in order:
-
-Load data
-
-Preprocess
-
-Train models
-
-Evaluate and visualize results
-
-📈 Possible Improvements
-
-Here are ideas you could implement to enhance the project:
-
-Hyperparameter tuning (GridSearch, RandomSearch) to improve model performance.
-
-Cross-validation to ensure robustness.
-
-Feature engineering: create new features, better encode categorical variables.
-
-Use ensemble methods (e.g. Gradient Boosting, XGBoost).
-
-Address class imbalance (if defaults are much fewer than non-defaults) via oversampling, undersampling, or synthetic methods (SMOTE).
-
-Deployment: build a simple interface (dashboard or API) to use the model for prediction in real time.
+Code: [MIT](LICENSE). Dataset: Yeh, I-Cheng (2009), UCI Machine Learning Repository, CC BY 4.0.
